@@ -12,12 +12,14 @@ import sys
 from glob import glob
 from opencv_face_recognition import face_recognition
 
-# Load the face detector
+'''
+Here we load the face detector
+'''
 face_recogniser = face_recognition()
 
 # Create a list of training images and labels
 labels = []
-images = glob('./my_photos/*/*', recursive=True)
+images = glob('./photos/*/*', recursive=True)
 for filename in images:
     labels.append(filename.split(os.path.sep)[-2].title())
 
