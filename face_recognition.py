@@ -34,12 +34,16 @@ print ("cam: ok.")
 
 cv2.namedWindow('Face Recognition', cv2.WND_PROP_FULLSCREEN)
 cv2.setWindowProperty('Face Recognition', cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
-
 while True:
     ret, frame = cam.read()
     labelled_frame = face_recogniser.recognise(frame)
-
     cv2.imshow('Face Recognition', labelled_frame)
+    if cv2.waitKey(20) & 0xFF == ord('q'):
+        break
+
+# When everything done, release the capture
+cam.release()
+cv2.destroyAllWindows()
 
 
 
