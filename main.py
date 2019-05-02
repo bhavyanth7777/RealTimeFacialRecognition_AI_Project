@@ -1,8 +1,3 @@
-"""
-Face recognition pipeline
-
-"""
-
 import os
 import cv2
 import imutils
@@ -27,19 +22,19 @@ for filename in images:
 face_recogniser.train(images, labels)
 
 # Now start video feed
-print('Checking for camera...')
+print('Camera check....')
 cam = cv2.VideoCapture(0)
 if ( not cam.isOpened() ):
-    print ("no cam!")
+    print ("no cam")
     sys.exit()
-print ("cam: ok.")
+print ("cam: present")
 
-cv2.namedWindow('Face Recognition', cv2.WND_PROP_FULLSCREEN)
-cv2.setWindowProperty('Face Recognition', cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
+cv2.namedWindow('AI Project', cv2.WND_PROP_FULLSCREEN)
+cv2.setWindowProperty('AI Project', cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
 while True:
     ret, frame = cam.read()
     labelled_frame = face_recogniser.recognise(frame)
-    cv2.imshow('Face Recognition', labelled_frame)
+    cv2.imshow('AI Project', labelled_frame)
     if cv2.waitKey(20) & 0xFF == ord('q'):
         break
 
