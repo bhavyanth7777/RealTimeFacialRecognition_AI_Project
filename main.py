@@ -5,10 +5,11 @@ import cv2
 import argparse
 import sys
 from glob import glob
+# Importing from the opencv_face_recognition module in the folder
 from opencv_face_recognition import face_recognition
 
 '''
-Here we load the face detector
+Here we load the face recogniser
 '''
 face_recogniser = face_recognition()
 
@@ -22,15 +23,20 @@ for filename in images:
 face_recogniser.train(images, labels)
 
 # Now start video feed
-print('Camera check....')
-cam = cv2.VideoCapture(0)
+print('Checking camera..')
+
+# Edit 0 to './filename.mov' to perform facial recognition on video streaming
+cam = cv2.VideoCapture('./bhavyanth.MOV')
 if ( not cam.isOpened() ):
     print ("no cam")
     sys.exit()
 print ("cam: present")
 
+# Video frame parameters
 cv2.namedWindow('AI Project', cv2.WND_PROP_FULLSCREEN)
 cv2.setWindowProperty('AI Project', cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
+
+# Loop until q is pressed
 while True:
     ret, frame = cam.read()
     labelled_frame = face_recogniser.recognise(frame)

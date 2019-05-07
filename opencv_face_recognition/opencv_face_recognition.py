@@ -1,8 +1,3 @@
-"""
-OpenCV Face Recognition
-"""
-
-
 import os
 import imutils
 import cv2
@@ -20,17 +15,13 @@ mean_subtract_values = (104, 177, 123)
 
 
 class face_recognition:
+    '''
+    Define paths for the openface module, resnet module 
+    '''
     def __init__(self, prototxt_path='./opencv_face_recognition/face_detector/deploy.prototxt',
                  model_path='./opencv_face_recognition/face_detector/res10_300x300_ssd_iter_140000_fp16.caffemodel',
                  embedding_model='./opencv_face_recognition/openface/nn4.small2.v1.t7',
                  labels_file=False, recogniser_file=False):
-        """
-        :param prototxt_path: string Path to deploy.protext
-        :param model_path: string Path to trained caffe model
-        :param embedding_model: string Path to OpenFace model
-        :param labels: Labels from trained classifier
-        :param recogniser: Trained classifer
-        """
         self.detector = cv2.dnn.readNetFromCaffe(prototxt_path, model_path)
         self.embedder = cv2.dnn.readNetFromTorch(embedding_model)
         self.labels = []
@@ -44,13 +35,11 @@ class face_recognition:
         else:
             self.recogniser = SVC(C=1.0, kernel="linear", probability=True)
 
+    # Internal function
     def _detect_faces(self, image, all=False):
-        """
-        Use OpenCV face detector to return face ROI (detections) from an image.
-        :param image:  np.array - image
-        :return: num_detections, detections:  int, np.array
-        """
+        # Resize images to 300x300
         resized_image = cv2.resize(image, (300, 300))
+        # Extract image blob
         image_blob = cv2.dnn.blobFromImage(resized_image, 1.0, (300, 300),
                                            mean_subtract_values, swapRB=False, crop=False)
         self.detector.setInput(image_blob)
@@ -58,37 +47,22 @@ class face_recognition:
         num_detections = detections.shape[2]
         return num_detections, detections
 
+    # Internal function
     def _get_face_vec(self, face):
-        """
-        Get the vector for this face
-        :param face: image containing the face
-        :return: vector
-        """
         face_blob = cv2.dnn.blobFromImage(face, 1.0 / 255,
-                                          (96, 96), (0, 0, 0), swapRB=False, crop=False)    # swapRB=True
+                                          (96, 96), (0, 0, 0), swapRB=False, crop=False) #set swapRB to true if you need gray scale images
         self.embedder.setInput(face_blob)
         return self.embedder.forward()
 
+    # Internal function
     def _get_face_bbox(self, detection, image_dimensions):
-        """
-        Get the coordinates for the face bounding box from this detection
-        :param detection: The OpenCV detection for this face
-        :param image_dimensions:  We need this to scale the bbox accordingly
-        :return:
-        """
-        (h, w) = image_dimensions   #image.shape[:2]
+        (h, w) = image_dimensions
         box = detection[3:7] * np.array([w, h, w, h])
         start_x, start_y, end_x, end_y = box.astype("int")
         return start_x, start_y, end_x, end_y
 
+    # Internal function
     def get_face_embeddings_from_image(self, image, all=False):
-        """
-        Return the bbox and the embeddings vector for the face in the image
-        (Note we return this for the face that has the highest confidence from the detector)
-        :param image: np.array
-        :param all: Boolean  - return face with highest confidece (False) or all detected faces (true)
-        :return: tuple, array
-        """
         results = []
         vec = []
         start_x, start_y, end_x, end_y = 0, 0, 0, 0
@@ -126,12 +100,6 @@ class face_recognition:
                 self.embeddings['embeddings'].append(face_embedding_vector[0])
 
     def recognise(self, image):
-        """
-        Predict all faces in an image
-        :param image: np.array containing image
-        :return: np.array containing image, bbox and labels
-        """
-        # box, vec = self.get_face_embeddings_from_image_multi(image)
         results = self.get_face_embeddings_from_image(image, all=True)
         if len(results):
             for box, vec in results:
@@ -140,23 +108,17 @@ class face_recognition:
                     j = np.argmax(predictions)
                     proba = predictions[j]
                     name = self.le.classes_[j]
-
                     start_x, start_y, end_x, end_y = box
                     text = "{}: {:.2f}%".format(name, proba * 100)
                     y = start_y - 10 if start_y - 10 > 10 else start_y + 10
+                    # Uses RGB for color. 
                     cv2.rectangle(image, (start_x, start_y), (end_x, end_y),
-                                  (0, 0, 255), 2)
+                                  (0, 255, 255), 3)
                     cv2.putText(image, text, (start_x, y),
                                 cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
         return image
 
     def train(self, X, y):
-        """
-        Train the SVM model based on the data provided
-        :param X: list of filenames
-        :param y: labels
-        :return:
-        """
         print('Training model with {} sample images'.format(len(X)))
         self._build_embeddings(X, y)
         self.labels = self.le.fit_transform(self.embeddings['names'])
